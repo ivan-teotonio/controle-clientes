@@ -4,25 +4,30 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/app/components/Sidebar";
 
+interface Equipment {
+  id: number;
+  name: string;
+  model: string;
+  serialNumber: string;
+  client: { name: string };
+}
+
 interface Client {
   id: number;
   name: string;
-  email: string;
-  phone: string;
-  address: string;
 }
 
-export default function ClientsPage() {
+export default function EquipmentsPage() {
   const router = useRouter();
+  const [equipments, setEquipments] = useState<Equipment[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
     name: "",
-    email: "",
-    phone: "",
-    address: "",
+    model: "",
+    serialNumber: "",
+    clientId: "",
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -33,13 +38,14 @@ export default function ClientsPage() {
       router.push("/login");
       return;
     }
+    fetchEquipments(token);
     fetchClients(token);
   }, []);
 
-  async function fetchClients(token: string, search = "") {
+  async function fetchEquipments(token: string) {
     setLoading(true);
     try {
-      const res = await fetch(`/api/clients?search=${search}&limit=20`, {
+      const res = await fetch("/api/equipments?limit=20", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.status === 401) {
@@ -47,10 +53,18 @@ export default function ClientsPage() {
         return;
       }
       const data = await res.json();
-      setClients(data.data);
+      setEquipments(data.data);
     } finally {
       setLoading(false);
     }
+  }
+
+  async function fetchClients(token: string) {
+    const res = await fetch("/api/clients?limit=100", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    setClients(data.data);
   }
 
   async function handleSave() {
@@ -58,13 +72,13 @@ export default function ClientsPage() {
     setSaving(true);
     setError("");
     try {
-      const res = await fetch("/api/clients", {
+      const res = await fetch("/api/equipments", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, clientId: Number(form.clientId) }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -72,27 +86,21 @@ export default function ClientsPage() {
         return;
       }
       setShowForm(false);
-      setForm({ name: "", email: "", phone: "", address: "" });
-      fetchClients(token);
+      setForm({ name: "", model: "", serialNumber: "", clientId: "" });
+      fetchEquipments(token);
     } finally {
       setSaving(false);
     }
   }
 
   async function handleDelete(id: number) {
-    if (!confirm("Deseja remover este cliente?")) return;
+    if (!confirm("Deseja remover este equipamento?")) return;
     const token = localStorage.getItem("accessToken")!;
-    await fetch(`/api/clients/${id}`, {
+    await fetch(`/api/equipments/${id}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
-    fetchClients(token);
-  }
-
-  function handleSearch(e: React.ChangeEvent<HTMLInputElement>) {
-    const token = localStorage.getItem("accessToken")!;
-    setSearch(e.target.value);
-    fetchClients(token, e.target.value);
+    fetchEquipments(token);
   }
 
   return (
@@ -102,36 +110,24 @@ export default function ClientsPage() {
       <div className="flex-1 bg-gray-50 p-6">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-lg font-medium text-gray-900">Clientes</h1>
+            <h1 className="text-lg font-medium text-gray-900">Equipamentos</h1>
             <p className="text-sm text-gray-500">
-              Gerencie os clientes do sistema
+              Gerencie os equipamentos dos clientes
             </p>
           </div>
           <button
             onClick={() => setShowForm(true)}
             className="bg-[#1B3A5C] text-white text-sm px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
           >
-            + Novo cliente
+            + Novo equipamento
           </button>
         </div>
 
-        {/* busca */}
-        <div className="mb-4">
-          <input
-            type="text"
-            value={search}
-            onChange={handleSearch}
-            placeholder="Buscar por nome ou email..."
-            className="w-full max-w-sm h-10 px-3 text-sm border border-gray-200 rounded-lg bg-white outline-none focus:border-[#1B3A5C] transition-colors"
-          />
-        </div>
-
-        {/* modal de cadastro */}
         {showForm && (
           <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
             <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-lg">
               <h2 className="text-base font-medium text-gray-900 mb-4">
-                Novo cliente
+                Novo equipamento
               </h2>
 
               {error && (
@@ -141,26 +137,36 @@ export default function ClientsPage() {
               )}
 
               <div className="space-y-3">
+                <div>
+                  <label className="block text-sm text-gray-600 mb-1">
+                    Cliente
+                  </label>
+                  <select
+                    value={form.clientId}
+                    onChange={(e) =>
+                      setForm({ ...form, clientId: e.target.value })
+                    }
+                    className="w-full h-10 px-3 text-sm border border-gray-200 rounded-lg outline-none focus:border-[#1B3A5C] bg-white"
+                  >
+                    <option value="">Selecione o cliente...</option>
+                    {clients.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 {[
                   {
                     label: "Nome",
                     key: "name",
-                    placeholder: "Empresa ABC Ltda",
+                    placeholder: "Compressor AR-200",
                   },
+                  { label: "Modelo", key: "model", placeholder: "AR-200 Pro" },
                   {
-                    label: "E-mail",
-                    key: "email",
-                    placeholder: "contato@empresa.com",
-                  },
-                  {
-                    label: "Telefone",
-                    key: "phone",
-                    placeholder: "(81) 99999-0000",
-                  },
-                  {
-                    label: "Endereço",
-                    key: "address",
-                    placeholder: "Rua das Flores, 123",
+                    label: "Número de série",
+                    key: "serialNumber",
+                    placeholder: "SN-001-2024",
                   },
                 ].map((field) => (
                   <div key={field.key}>
@@ -202,15 +208,14 @@ export default function ClientsPage() {
           </div>
         )}
 
-        {/* tabela */}
         <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
           {loading ? (
             <div className="p-8 text-center text-gray-400 text-sm">
               Carregando...
             </div>
-          ) : clients.length === 0 ? (
+          ) : equipments.length === 0 ? (
             <div className="p-8 text-center text-gray-400 text-sm">
-              Nenhum cliente encontrado
+              Nenhum equipamento encontrado
             </div>
           ) : (
             <table className="w-full text-sm">
@@ -220,13 +225,13 @@ export default function ClientsPage() {
                     Nome
                   </th>
                   <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium">
-                    E-mail
+                    Modelo
                   </th>
                   <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium">
-                    Telefone
+                    Nº de série
                   </th>
                   <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium">
-                    Endereço
+                    Cliente
                   </th>
                   <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium">
                     Ações
@@ -234,22 +239,26 @@ export default function ClientsPage() {
                 </tr>
               </thead>
               <tbody>
-                {clients.map((client) => (
+                {equipments.map((equipment) => (
                   <tr
-                    key={client.id}
+                    key={equipment.id}
                     className="border-b border-gray-50 hover:bg-gray-50 transition-colors"
                   >
                     <td className="px-4 py-3 text-gray-900 font-medium">
-                      {client.name}
+                      {equipment.name}
                     </td>
-                    <td className="px-4 py-3 text-gray-600">{client.email}</td>
-                    <td className="px-4 py-3 text-gray-600">{client.phone}</td>
                     <td className="px-4 py-3 text-gray-600">
-                      {client.address || "—"}
+                      {equipment.model}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {equipment.serialNumber}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {equipment.client.name}
                     </td>
                     <td className="px-4 py-3">
                       <button
-                        onClick={() => handleDelete(client.id)}
+                        onClick={() => handleDelete(equipment.id)}
                         className="text-xs text-red-500 hover:text-red-700 transition-colors"
                       >
                         Remover

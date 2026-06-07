@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Sidebar from "@/app/components/Sidebar";
 
 interface ServiceOrder {
   id: number;
@@ -52,16 +53,13 @@ export default function DashboardPage() {
   });
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("");
-  const [user, setUser] = useState<{ name: string } | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
-    const userData = localStorage.getItem("user");
     if (!token) {
       router.push("/login");
       return;
     }
-    if (userData) setUser(JSON.parse(userData));
     fetchOrders(token);
   }, []);
 
@@ -84,7 +82,6 @@ export default function DashboardPage() {
       const data = await res.json();
       setOrders(data.data);
 
-      // calcula os stats
       const allRes = await fetch("/api/service-orders?limit=100", {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -108,77 +105,10 @@ export default function DashboardPage() {
     fetchOrders(token, status || undefined);
   }
 
-  function handleLogout() {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("user");
-    router.push("/login");
-  }
-
   return (
     <div className="flex min-h-screen">
-      {/* sidebar */}
-      <div className="w-48 bg-[#1B3A5C] flex flex-col py-5">
-        <div className="flex items-center gap-2 px-4 pb-4 border-b border-white/10 mb-4">
-          <div className="w-7 h-7 bg-white/10 rounded-md flex items-center justify-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-4 h-4 text-white"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 0 0 4.486-6.336l-3.276 3.277a3.004 3.004 0 0 1-2.25-2.25l3.276-3.276a4.5 4.5 0 0 0-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437 1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008Z"
-              />
-            </svg>
-          </div>
-          <span className="text-white font-medium text-sm">OS Manager</span>
-        </div>
+      <Sidebar />
 
-        <nav className="flex-1 px-2 space-y-1">
-          <Link
-            href="/dashboard"
-            className="flex items-center gap-2 px-3 py-2 rounded-md text-white bg-white/10 text-sm"
-          >
-            📋 Ordens de Serviço
-          </Link>
-          <Link
-            href="/clients"
-            className="flex items-center gap-2 px-3 py-2 rounded-md text-white/60 hover:text-white hover:bg-white/10 text-sm transition-colors"
-          >
-            👥 Clientes
-          </Link>
-          <Link
-            href="/technicians"
-            className="flex items-center gap-2 px-3 py-2 rounded-md text-white/60 hover:text-white hover:bg-white/10 text-sm transition-colors"
-          >
-            👨‍🔧 Técnicos
-          </Link>
-          <Link
-            href="/equipments"
-            className="flex items-center gap-2 px-3 py-2 rounded-md text-white/60 hover:text-white hover:bg-white/10 text-sm transition-colors"
-          >
-            🖥️ Equipamentos
-          </Link>
-        </nav>
-
-        <div className="px-2 mt-auto">
-          <div className="px-3 py-2 text-white/40 text-xs mb-1">
-            {user?.name}
-          </div>
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-white/60 hover:text-white hover:bg-white/10 text-sm transition-colors"
-          >
-            🚪 Sair
-          </button>
-        </div>
-      </div>
-
-      {/* conteúdo */}
       <div className="flex-1 bg-gray-50 p-6">
         <div className="flex justify-between items-center mb-6">
           <div>
@@ -195,7 +125,6 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        {/* cards */}
         <div className="grid grid-cols-4 gap-3 mb-6">
           {[
             {
@@ -227,7 +156,6 @@ export default function DashboardPage() {
           ))}
         </div>
 
-        {/* tabela */}
         <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
           <div className="flex gap-2 p-4 border-b border-gray-100">
             {[

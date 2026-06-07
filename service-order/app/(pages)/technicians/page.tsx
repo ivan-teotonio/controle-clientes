@@ -4,17 +4,17 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/app/components/Sidebar";
 
-interface Client {
+interface Technician {
   id: number;
   name: string;
   email: string;
   phone: string;
-  address: string;
+  specialty: string;
 }
 
-export default function ClientsPage() {
+export default function TechniciansPage() {
   const router = useRouter();
-  const [clients, setClients] = useState<Client[]>([]);
+  const [technicians, setTechnicians] = useState<Technician[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -22,7 +22,7 @@ export default function ClientsPage() {
     name: "",
     email: "",
     phone: "",
-    address: "",
+    specialty: "",
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -33,13 +33,13 @@ export default function ClientsPage() {
       router.push("/login");
       return;
     }
-    fetchClients(token);
+    fetchTechnicians(token);
   }, []);
 
-  async function fetchClients(token: string, search = "") {
+  async function fetchTechnicians(token: string, search = "") {
     setLoading(true);
     try {
-      const res = await fetch(`/api/clients?search=${search}&limit=20`, {
+      const res = await fetch(`/api/technicians?search=${search}&limit=20`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.status === 401) {
@@ -47,7 +47,7 @@ export default function ClientsPage() {
         return;
       }
       const data = await res.json();
-      setClients(data.data);
+      setTechnicians(data.data);
     } finally {
       setLoading(false);
     }
@@ -58,7 +58,7 @@ export default function ClientsPage() {
     setSaving(true);
     setError("");
     try {
-      const res = await fetch("/api/clients", {
+      const res = await fetch("/api/technicians", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -72,27 +72,27 @@ export default function ClientsPage() {
         return;
       }
       setShowForm(false);
-      setForm({ name: "", email: "", phone: "", address: "" });
-      fetchClients(token);
+      setForm({ name: "", email: "", phone: "", specialty: "" });
+      fetchTechnicians(token);
     } finally {
       setSaving(false);
     }
   }
 
   async function handleDelete(id: number) {
-    if (!confirm("Deseja remover este cliente?")) return;
+    if (!confirm("Deseja remover este técnico?")) return;
     const token = localStorage.getItem("accessToken")!;
-    await fetch(`/api/clients/${id}`, {
+    await fetch(`/api/technicians/${id}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
-    fetchClients(token);
+    fetchTechnicians(token);
   }
 
   function handleSearch(e: React.ChangeEvent<HTMLInputElement>) {
     const token = localStorage.getItem("accessToken")!;
     setSearch(e.target.value);
-    fetchClients(token, e.target.value);
+    fetchTechnicians(token, e.target.value);
   }
 
   return (
@@ -102,36 +102,34 @@ export default function ClientsPage() {
       <div className="flex-1 bg-gray-50 p-6">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-lg font-medium text-gray-900">Clientes</h1>
+            <h1 className="text-lg font-medium text-gray-900">Técnicos</h1>
             <p className="text-sm text-gray-500">
-              Gerencie os clientes do sistema
+              Gerencie os técnicos do sistema
             </p>
           </div>
           <button
             onClick={() => setShowForm(true)}
             className="bg-[#1B3A5C] text-white text-sm px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
           >
-            + Novo cliente
+            + Novo técnico
           </button>
         </div>
 
-        {/* busca */}
         <div className="mb-4">
           <input
             type="text"
             value={search}
             onChange={handleSearch}
-            placeholder="Buscar por nome ou email..."
+            placeholder="Buscar por nome ou especialidade..."
             className="w-full max-w-sm h-10 px-3 text-sm border border-gray-200 rounded-lg bg-white outline-none focus:border-[#1B3A5C] transition-colors"
           />
         </div>
 
-        {/* modal de cadastro */}
         {showForm && (
           <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
             <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-lg">
               <h2 className="text-base font-medium text-gray-900 mb-4">
-                Novo cliente
+                Novo técnico
               </h2>
 
               {error && (
@@ -142,15 +140,11 @@ export default function ClientsPage() {
 
               <div className="space-y-3">
                 {[
-                  {
-                    label: "Nome",
-                    key: "name",
-                    placeholder: "Empresa ABC Ltda",
-                  },
+                  { label: "Nome", key: "name", placeholder: "João Silva" },
                   {
                     label: "E-mail",
                     key: "email",
-                    placeholder: "contato@empresa.com",
+                    placeholder: "joao@osmanager.com",
                   },
                   {
                     label: "Telefone",
@@ -158,9 +152,9 @@ export default function ClientsPage() {
                     placeholder: "(81) 99999-0000",
                   },
                   {
-                    label: "Endereço",
-                    key: "address",
-                    placeholder: "Rua das Flores, 123",
+                    label: "Especialidade",
+                    key: "specialty",
+                    placeholder: "Elétrica, Hidráulica...",
                   },
                 ].map((field) => (
                   <div key={field.key}>
@@ -202,15 +196,14 @@ export default function ClientsPage() {
           </div>
         )}
 
-        {/* tabela */}
         <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
           {loading ? (
             <div className="p-8 text-center text-gray-400 text-sm">
               Carregando...
             </div>
-          ) : clients.length === 0 ? (
+          ) : technicians.length === 0 ? (
             <div className="p-8 text-center text-gray-400 text-sm">
-              Nenhum cliente encontrado
+              Nenhum técnico encontrado
             </div>
           ) : (
             <table className="w-full text-sm">
@@ -226,7 +219,7 @@ export default function ClientsPage() {
                     Telefone
                   </th>
                   <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium">
-                    Endereço
+                    Especialidade
                   </th>
                   <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium">
                     Ações
@@ -234,22 +227,26 @@ export default function ClientsPage() {
                 </tr>
               </thead>
               <tbody>
-                {clients.map((client) => (
+                {technicians.map((technician) => (
                   <tr
-                    key={client.id}
+                    key={technician.id}
                     className="border-b border-gray-50 hover:bg-gray-50 transition-colors"
                   >
                     <td className="px-4 py-3 text-gray-900 font-medium">
-                      {client.name}
+                      {technician.name}
                     </td>
-                    <td className="px-4 py-3 text-gray-600">{client.email}</td>
-                    <td className="px-4 py-3 text-gray-600">{client.phone}</td>
                     <td className="px-4 py-3 text-gray-600">
-                      {client.address || "—"}
+                      {technician.email}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {technician.phone}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {technician.specialty}
                     </td>
                     <td className="px-4 py-3">
                       <button
-                        onClick={() => handleDelete(client.id)}
+                        onClick={() => handleDelete(technician.id)}
                         className="text-xs text-red-500 hover:text-red-700 transition-colors"
                       >
                         Remover
