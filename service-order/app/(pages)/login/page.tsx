@@ -124,7 +124,7 @@ export default function LoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="ana@osmanager.com"
+                  placeholder="seuemail@osmanager.com"
                   required
                   className="w-full h-10 px-3 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-[#1B3A5C] transition-colors"
                 />

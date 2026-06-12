@@ -31,7 +31,10 @@ export async function POST(req: NextRequest) {
     return response;
   } catch (error) {
     console.error("ERRO LOGIN:", error);
-    if (error instanceof Error && error.message === "Credenciais inválidas") {
+    if (
+      error instanceof Error &&
+      error.message === "Email ou senha inválidos"
+    ) {
       return NextResponse.json({ message: error.message }, { status: 401 });
     }
     return NextResponse.json(

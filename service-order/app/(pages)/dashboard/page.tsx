@@ -214,7 +214,8 @@ export default function DashboardPage() {
                 {orders.map((order) => (
                   <tr
                     key={order.id}
-                    className="border-b border-gray-50 hover:bg-gray-50 transition-colors"
+                    className="border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointe"
+                    onClick={() => router.push(`/service-orders/${order.id}`)}
                   >
                     <td className="px-4 py-3 text-gray-400">#{order.id}</td>
                     <td className="px-4 py-3 text-gray-900">{order.title}</td>
