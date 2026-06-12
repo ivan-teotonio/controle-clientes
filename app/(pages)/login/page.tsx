@@ -154,7 +154,7 @@ export default function LoginPage() {
             </form>
 
             <p className="text-xs text-gray-400 text-center mt-6">
-              OS Manager © 2024
+              OS Manager © 2026
             </p>
           </div>
         </div>
