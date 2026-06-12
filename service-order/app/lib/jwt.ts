@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 
 const SECRET = process.env.JWT_SECRET as string;
 
-export function generateAccessToken(payload: { id: number; email: string }) {
+export function generateAccessToken(payload: { id: number }) {
   return jwt.sign(payload, SECRET, { expiresIn: "15m" });
 }
 

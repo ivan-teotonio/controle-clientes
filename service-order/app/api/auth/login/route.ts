@@ -16,8 +16,11 @@ export async function POST(req: NextRequest) {
     }
 
     const user = await authService.login(email, password);
-    const accessToken = generateAccessToken({ id: user.id, email: user.email });
-    const refreshToken = generateRefreshToken({ id: user.id });
+    const accessToken = generateAccessToken({ id: user.id });
+    const refreshToken = generateRefreshToken({
+      id: user.id,
+      email: user.email,
+    });
 
     const response = NextResponse.json({ user, accessToken });
 
