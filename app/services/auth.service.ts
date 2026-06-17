@@ -44,4 +44,29 @@ export class AuthService {
       email: user.email,
     };
   }
+
+  async validateCpf(cpf: string) {
+    const user = await prisma.user.findUnique({ where: { cpf } });
+    if (!user) throw new Error("CPF não encontrado");
+    if (user.isActive) throw new Error("CPF já ativo. Faça o login");
+
+    return { name: user.name };
+  }
+
+  async completeRegistration(data: {
+    cpf: string;
+    email: string;
+    password: string;
+  }) {
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+
+    return await prisma.user.update({
+      where: { cpf: data.cpf },
+      data: {
+        email: data.email,
+        password: hashedPassword,
+        isActive: true,
+      },
+    });
+  }
 }

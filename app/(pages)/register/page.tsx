@@ -38,10 +38,25 @@ export default function RegisterPage() {
   }
 
   async function handleCompleteRegistration() {
-    //chamada para api
-    console.log("Dados enviados:", { cpf, email, password });
-    //salvar e redirecionar
-    router.push("/login");
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/complete-registration", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cpf, email, password }),
+      });
+
+      if (res.ok) {
+        alert("Cadastro concluído com sucesso!");
+        router.push("/login");
+      } else {
+        setError("Erro ao salvar dados no servidor.");
+      }
+    } catch {
+      setError("Erro de conexão.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
