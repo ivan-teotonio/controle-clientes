@@ -8,9 +8,11 @@ datasource db {
 
 model User {
   id        Int      @id @default(autoincrement())
+  cpf       String?  @unique
   name      String
   email     String   @unique
   password  String
+  isActive  Boolean  @default(false) @map("is_active")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 

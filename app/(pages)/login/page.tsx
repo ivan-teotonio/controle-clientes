@@ -151,6 +151,15 @@ export default function LoginPage() {
               >
                 {loading ? "Entrando..." : "Entrar"}
               </button>
+
+              <button
+                type="button"
+                onClick={() => router.push("/register")}
+                className="w-full h-10 border border-gray-200 text-gray-600
+                text-sm font-medium rounded-lg hover:bg-gray-50 transiction-colors"
+              >
+                Cadastrar
+              </button>
             </form>
 
             <p className="text-xs text-gray-400 text-center mt-6">
