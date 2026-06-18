@@ -81,13 +81,15 @@ export default function ClientsPage() {
   // }
 
   async function handleSave() {
-    const token = localStorage.getItem("accessToken")!; 
+    const token = localStorage.getItem("accessToken")!;
     setSaving(true);
     setError("");
 
     try {
-      const url = editingClient ? `/api/clients/${editingClient.id}` : "/api/clients"; 
-      const method = editingClient ? "PATCH" : "POST"; 
+      const url = editingClient
+        ? `/api/clients/${editingClient.id}`
+        : "/api/clients";
+      const method = editingClient ? "PATCH" : "POST";
 
       const res = await fetch(url, {
         method,
@@ -96,20 +98,19 @@ export default function ClientsPage() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(form),
-      }); 
+      });
 
-      if (!res.ok) throw new Error("Erro ao salvar cliente."); 
-      setShowForm(false); 
-      setEditingClient(null); // limpa o estado 
-      setForm({ name: "", email: "", phone: "", address: "" }); 
+      if (!res.ok) throw new Error("Erro ao salvar cliente.");
+      setShowForm(false);
+      setEditingClient(null); // limpa o estado
+      setForm({ name: "", email: "", phone: "", address: "" });
       fetchClients(token); // recarrega a lista
-
     } catch {
       setError("Erro ao salvar cliente.");
     } finally {
       setSaving(false);
     }
-  } 
+  }
 
   async function handleDelete(id: number) {
     if (!confirm("Deseja remover este cliente?")) return;
@@ -151,15 +152,14 @@ export default function ClientsPage() {
   }
 
   function handleEdit(client: Client) {
-    setEditingClient(client); // guarda o cliente que está sendo editado 
+    setEditingClient(client);
     setForm({
       name: client.name,
       email: client.email,
       phone: client.phone,
       address: client.address,
     });
-    setShowForm(true); // abre o formulário para edição 
-    }
+    setShowForm(true);
   }
 
   return (
@@ -315,8 +315,8 @@ export default function ClientsPage() {
                       {client.address || "—"}
                     </td>
                     <td className="px-4 py-3 flex gap-2">
-                      <button 
-                        onClick={() => handleEdit(client)} 
+                      <button
+                        onClick={() => handleEdit(client)}
                         className="text-xs text-blue-500 hover:text-blue-700"
                       >
                         Editar
