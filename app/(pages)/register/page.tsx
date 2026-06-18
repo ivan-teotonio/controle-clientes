@@ -16,9 +16,11 @@ export default function RegisterPage() {
 
   const formatCpf = (value: string) => {
     return value
-      .replace(/\D/g, "")
-      .replace(/(\d{3})(\d)/, "$1.$2")
-      .replace(/(\d{3})(\d)/, "$1.$2");
+      .replace(/\D/g, "") // Remove tudo que não for número
+      .replace(/(\d{3})(\d)/, "$1.$2") // Adiciona o primeiro ponto
+      .replace(/(\d{3})(\d)/, "$1.$2") // Adiciona o segundo ponto
+      .replace(/(\d{3})(\d{1,2})/, "$1-$2") // Adiciona o traço
+      .slice(0, 14); // Limita a 14 caracteres (000.000.000-00)
   };
 
   async function handleValidateCpf() {
