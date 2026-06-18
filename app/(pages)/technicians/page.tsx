@@ -74,8 +74,20 @@ export default function TechniciansPage() {
         },
         body: JSON.stringify(form),
       });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Erro ao salvar técnico.");
+      }
+
+      // Se deu tudo certo:
+      setShowForm(false);
+      setForm({ name: "", email: "", phone: "", specialty: "" });
+      setEditingTechnician(null);
+      fetchTechnicians(token);
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || "Erro inesperado ao salvar.");
     } finally {
       setSaving(false);
     }
