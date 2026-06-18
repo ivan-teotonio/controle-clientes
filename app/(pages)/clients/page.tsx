@@ -128,29 +128,6 @@ export default function ClientsPage() {
     fetchClients(token, e.target.value);
   }
 
-  async function handleUpdateClient(id: number, updatedData: any) {
-    try {
-      const response = await fetch(`/api/clients/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Lembre-se de passar seu token de autenticação
-        },
-        body: JSON.stringify(updatedData),
-      });
-
-      if (!response.ok) {
-        throw new Error("Erro ao atualizar o cliente.");
-      }
-
-      alert("Cliente atualizado com sucesso!");
-      // Aqui você pode recarregar a lista ou atualizar o estado local
-    } catch (error) {
-      console.error("Erro na atualização:", error);
-      alert("Não foi possível salvar as alterações.");
-    }
-  }
-
   function handleEdit(client: Client) {
     setEditingClient(client);
     setForm({
