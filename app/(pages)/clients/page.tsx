@@ -175,7 +175,11 @@ export default function ClientsPage() {
             </p>
           </div>
           <button
-            onClick={() => setShowForm(true)}
+            onClick={() => {
+              setEditingClient(null);
+              setForm({ name: "", email: "", phone: "", address: "" });
+              setShowForm(true); // Abre o modal
+            }}
             className="bg-[#1B3A5C] text-white text-sm px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
           >
             + Novo cliente
