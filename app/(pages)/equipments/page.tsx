@@ -23,6 +23,9 @@ export default function EquipmentsPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(
+    null,
+  );
   const [form, setForm] = useState({
     name: "",
     model: "",
@@ -67,27 +70,60 @@ export default function EquipmentsPage() {
     setClients(data.data);
   }
 
+  // async function handleSave() {
+  //   const token = localStorage.getItem("accessToken")!;
+  //   setSaving(true);
+  //   setError("");
+  //   try {
+  //     const res = await fetch("/api/equipments", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //       body: JSON.stringify({ ...form, clientId: Number(form.clientId) }),
+  //     });
+  //     const data = await res.json();
+  //     if (!res.ok) {
+  //       setError(data.message);
+  //       return;
+  //     }
+  //     setShowForm(false);
+  //     setForm({ name: "", model: "", serialNumber: "", clientId: "" });
+  //     fetchEquipments(token);
+  //   } finally {
+  //     setSaving(false);
+  //   }
+  // }
+
   async function handleSave() {
     const token = localStorage.getItem("accessToken")!;
     setSaving(true);
     setError("");
+
     try {
-      const res = await fetch("/api/equipments", {
-        method: "POST",
+      const url = editingEquipment
+        ? `/api/equipments/${editingEquipment.id}`
+        : "/api/equipments";
+      const method = editingEquipment ? "PATCH" : "POST";
+
+      const res = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ ...form, clientId: Number(form.clientId) }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.message);
-        return;
-      }
+
+      if (!res.ok) throw new Error("Erro ao salvar equipamento.");
+
       setShowForm(false);
       setForm({ name: "", model: "", serialNumber: "", clientId: "" });
+      setEditingEquipment(null);
       fetchEquipments(token);
+    } catch {
+      setError("Erro ao salvar equipamento.");
     } finally {
       setSaving(false);
     }
@@ -103,6 +139,17 @@ export default function EquipmentsPage() {
     fetchEquipments(token);
   }
 
+  function handleEdit(equipment: Equipment) {
+    setEditingEquipment(equipment);
+    setForm({
+      name: equipment.name,
+      model: equipment.model,
+      serialNumber: equipment.serialNumber,
+      clientId: equipment.client.id.toString(),
+    });
+    setShowForm(true);
+  }
+
   return (
     <div className="flex min-h-screen">
       <Sidebar />
@@ -116,8 +163,12 @@ export default function EquipmentsPage() {
             </p>
           </div>
           <button
-            onClick={() => setShowForm(true)}
-            className="bg-[#1B3A5C] text-white text-sm px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
+            onClick={() => {
+              setEditingEquipment(null);
+              setForm({ name: "", model: "", serialNumber: "", clientId: "" });
+              setShowForm(true);
+            }}
+            className="..."
           >
             + Novo equipamento
           </button>
@@ -256,7 +307,13 @@ export default function EquipmentsPage() {
                     <td className="px-4 py-3 text-gray-600">
                       {equipment.client.name}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 flex gap-2">
+                      <button
+                        onClick={() => handleEdit(equipment)}
+                        className="text-xs text-blue-500 hover:text-blue-700 mr-2"
+                      >
+                        Editar
+                      </button>
                       <button
                         onClick={() => handleDelete(equipment.id)}
                         className="text-xs text-red-500 hover:text-red-700 transition-colors"
