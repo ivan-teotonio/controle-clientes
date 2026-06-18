@@ -18,6 +18,9 @@ export default function TechniciansPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [editingTechnician, setEditingTechnician] = useState<Technician | null>(
+    null,
+  );
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -58,22 +61,21 @@ export default function TechniciansPage() {
     setSaving(true);
     setError("");
     try {
-      const res = await fetch("/api/technicians", {
-        method: "POST",
+      const url = editingTechnician
+        ? `/api/technicians/${editingTechnician.id}`
+        : "/api/technicians";
+      const method = editingTechnician ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(form),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.message);
-        return;
-      }
-      setShowForm(false);
-      setForm({ name: "", email: "", phone: "", specialty: "" });
-      fetchTechnicians(token);
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setSaving(false);
     }
@@ -95,6 +97,17 @@ export default function TechniciansPage() {
     fetchTechnicians(token, e.target.value);
   }
 
+  function handleEdit(technician: Technician) {
+    setEditingTechnician(technician);
+    setForm({
+      name: technician.name,
+      email: technician.email,
+      phone: technician.phone,
+      specialty: technician.specialty,
+    });
+    setShowForm(true);
+  }
+
   return (
     <div className="flex min-h-screen">
       <Sidebar />
@@ -108,7 +121,11 @@ export default function TechniciansPage() {
             </p>
           </div>
           <button
-            onClick={() => setShowForm(true)}
+            onClick={() => {
+              setEditingTechnician(null);
+              setForm({ name: "", email: "", phone: "", specialty: "" });
+              setShowForm(true); // Abre o modal
+            }}
             className="bg-[#1B3A5C] text-white text-sm px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
           >
             + Novo técnico
@@ -245,6 +262,12 @@ export default function TechniciansPage() {
                       {technician.specialty}
                     </td>
                     <td className="px-4 py-3">
+                      <button
+                        onClick={() => handleEdit(technician)}
+                        className="text-xs text-blue-500 hover:text-blue-700 mr-2"
+                      >
+                        Editar
+                      </button>
                       <button
                         onClick={() => handleDelete(technician.id)}
                         className="text-xs text-red-500 hover:text-red-700 transition-colors"
