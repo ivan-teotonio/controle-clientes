@@ -43,7 +43,12 @@ export class EquipmentService {
 
   async update(
     id: number,
-    data: Partial<{ name: string; model: string; serialNumber: string }>,
+    data: Partial<{
+      name: string;
+      model: string;
+      serialNumber: string;
+      clientId: number;
+    }>,
   ) {
     await this.findById(id);
     return await prisma.equipment.update({ where: { id }, data });

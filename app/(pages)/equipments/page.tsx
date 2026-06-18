@@ -9,7 +9,10 @@ interface Equipment {
   name: string;
   model: string;
   serialNumber: string;
-  client: { name: string };
+  client: {
+    id: number;
+    name: string;
+  };
 }
 
 interface Client {
