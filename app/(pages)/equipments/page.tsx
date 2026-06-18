@@ -70,32 +70,6 @@ export default function EquipmentsPage() {
     setClients(data.data);
   }
 
-  // async function handleSave() {
-  //   const token = localStorage.getItem("accessToken")!;
-  //   setSaving(true);
-  //   setError("");
-  //   try {
-  //     const res = await fetch("/api/equipments", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //       body: JSON.stringify({ ...form, clientId: Number(form.clientId) }),
-  //     });
-  //     const data = await res.json();
-  //     if (!res.ok) {
-  //       setError(data.message);
-  //       return;
-  //     }
-  //     setShowForm(false);
-  //     setForm({ name: "", model: "", serialNumber: "", clientId: "" });
-  //     fetchEquipments(token);
-  //   } finally {
-  //     setSaving(false);
-  //   }
-  // }
-
   async function handleSave() {
     const token = localStorage.getItem("accessToken")!;
     setSaving(true);
