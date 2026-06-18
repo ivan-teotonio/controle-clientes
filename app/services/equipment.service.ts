@@ -43,15 +43,19 @@ export class EquipmentService {
 
   async update(
     id: number,
-    data: Partial<{
-      name: string;
-      model: string;
-      serialNumber: string;
-      clientId: number;
-    }>,
+    data: any, // Use 'any' temporariamente para testar se o problema é o tipo
   ) {
-    await this.findById(id);
-    return await prisma.equipment.update({ where: { id }, data });
+    // Remova o await this.findById(id) se ele estiver bloqueando por falta de cliente
+    // Apenas tente o update direto:
+    return await prisma.equipment.update({
+      where: { id },
+      data: {
+        name: data.name,
+        model: data.model,
+        serialNumber: data.serialNumber,
+        clientId: Number(data.clientId), // Garanta que seja número
+      },
+    });
   }
 
   async delete(id: number) {

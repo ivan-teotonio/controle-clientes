@@ -46,6 +46,10 @@ export async function PATCH(
     }
     const { id } = await params;
     const data = await req.json();
+
+    // ADICIONE ESTA LINHA PARA VER O QUE O FRONT ESTÁ ENVIANDO
+    console.log("Dados recebidos no PATCH:", { id, data });
+
     const equipment = await equipmentService.update(Number(id), data);
     return NextResponse.json(equipment);
   } catch (error) {
