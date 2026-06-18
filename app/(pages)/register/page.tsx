@@ -14,6 +14,13 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const formatCpf = (value: string) => {
+    return value
+      .replace(/\D/g, "")
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d)/, "$1.$2");
+  };
+
   async function handleValidateCpf() {
     setLoading(true);
     setError("");
@@ -76,15 +83,6 @@ export default function RegisterPage() {
               </div>
             )}
 
-            {/* <div className="mb-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-1">
-                Crie sua conta
-              </h2>
-              <p className="text-sm text-gray-500">
-                Informe seu CPF para continuar
-              </p>
-            </div> */}
-
             <div className="space-y-4">
               {step === 1 ? (
                 <>
@@ -96,7 +94,7 @@ export default function RegisterPage() {
                       type="text"
                       placeholder="000.000.000-00"
                       value={cpf}
-                      onChange={(e) => setCpf(e.target.value)}
+                      onChange={(e) => setCpf(formatCpf(e.target.value))}
                       className="w-full h-10 px-3 text-sm border border-gray-200 rounded-lg outline-none focus:border-[#1B3A5C]"
                     />
                     <button
