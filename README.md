@@ -198,28 +198,44 @@ npm install
 # 3. Suba o banco de dados
 docker compose up -d
 
-# 4. Configure as variáveis de ambiente
+# 4. DATABASE_URL="postgresql://postgres:postgres@localhost:5432/osmanager"
+JWT_SECRET="sua-chave-secreta-aqui"
+
+# 5. Configure as variáveis de ambiente
 cp .env.example .env
 # edite o .env com suas configurações
 
-# 5. Rode as migrations
+# 6. Rode as migrations
 npx prisma migrate deploy
 
-# 6. Inicie o servidor
+# 7. Inicie o servidor
 npm run dev
 
 # 7. Acesse
 # http://localhost:3000
 ```
 
-### Variáveis de ambiente
+### Deploy em Produção (Vercel + AWS RDS)
 
-```env
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/osmanager"
-JWT_SECRET="sua-chave-secreta-aqui"
+#### Para colocar o sistema em produção, utilizamos infraestrutura na nuvem para alta disponibilidade.
+##### 1. Configuração do Banco de Dados (AWS RDS)
+##### 2. Segurança: No painel do RDS, verifique o Security Group. A porta 5432 deve estar configurada para aceitar conexões (certifique-se de que o acesso esteja liberado para o IP da sua aplicação ou de forma apropriada para sua política de segurança).
+##### 3. Endpoint: Copie o "Endpoint" do banco de dados fornecido pela AWS. 
+
+#### Configuração na Vercel
+##### Para que a aplicação na Vercel consiga "conversar" com o seu banco na AWS, você deve configurar as variáveis de ambiente no painel da Vercel:
+##### 1. Acesse o Dashboard da Vercel.
+##### 2. Selecione o seu projeto e vá em Settings > Environment Variables.
+##### 3. Adicione as seguintes chaves:
+- DATABASE_URL: A string de conexão no formato postgresql://usuario:senha@seu-endpoint-rds-aws:5432/osmanager
+- JWT_SECRET: A sua chave secreta usada para assinar os tokens de autenticação.
+
+#### Processo de Deploy e Migração
+```
+npx prisma migrate deploy
 ```
 
----
+
 
 ## 🖥️ Telas do sistema
 
