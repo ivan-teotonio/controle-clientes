@@ -208,7 +208,7 @@ export default function ClientsPage() {
                   {
                     label: "Endereço",
                     key: "address",
-                    placeholder: "Rua das Flores, 123",
+                    placeholder: "Rua teste, 123",
                   },
                 ].map((field) => (
                   <div key={field.key}>
