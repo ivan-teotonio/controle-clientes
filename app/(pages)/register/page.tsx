@@ -30,7 +30,7 @@ export default function RegisterPage() {
       const res = await fetch("/api/auth/validate-cpf", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cpf }),
+        body: JSON.stringify({ cpf: cpf.replace(/\D/g, "") }),
       });
       const data = await res.json();
       if (!res.ok) {
