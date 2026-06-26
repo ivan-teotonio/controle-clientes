@@ -52,7 +52,7 @@ export default function RegisterPage() {
       const res = await fetch("/api/auth/complete-registration", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cpf, email, password }),
+        body: JSON.stringify({ cpf: cpf.replace(/\D/g, ""), email, password }),
       });
 
       if (res.ok) {
