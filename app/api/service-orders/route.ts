@@ -5,6 +5,7 @@ import {
   ServiceOrderStatus,
   ServiceOrderPriority,
 } from "@/app/services/service-order.service";
+import { enviarParaFila } from "@/app/lib/sqs";
 
 const serviceOrderService = new ServiceOrderService();
 
@@ -74,6 +75,14 @@ export async function POST(req: NextRequest) {
       openedById: userId,
       technicianId,
       equipmentId,
+    });
+
+    // --- NOVA FUNCIONALIDADE: Disparo Assíncrono ---
+    await enviarParaFila({
+      evento: "OS_CRIADA",
+      osId: order.id,
+      cliente: clientId,
+      dataCriacao: new Date().toISOString(),
     });
 
     return NextResponse.json(order, { status: 201 });
