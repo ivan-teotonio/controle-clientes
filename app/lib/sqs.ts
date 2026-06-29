@@ -10,15 +10,15 @@ const sqsClient = new SQSClient({
 });
 
 export async function enviarParaFila(mensagem: any) {
+  console.log("Tentando enviar para a fila..."); // Adiciona isto
   try {
-    await sqsClient.send(
-      new SendMessageCommand({
-        QueueUrl: process.env.SQS_QUEUE_URL,
-        MessageBody: JSON.stringify(mensagem),
-      }),
-    );
+    const command = new SendMessageCommand({
+      QueueUrl: process.env.SQS_QUEUE_URL,
+      MessageBody: JSON.stringify(mensagem),
+    });
+    const resposta = await sqsClient.send(command);
+    console.log("Sucesso! ID da mensagem:", resposta.MessageId);
   } catch (erro) {
-    console.error("Erro ao enviar para o SQS:", erro);
-    // Não bloqueamos o fluxo principal da OS se o SQS falhar
+    console.error("ERRO DETALHADO NO SQS:", erro); // Isto vai-nos dar a pista final
   }
 }
