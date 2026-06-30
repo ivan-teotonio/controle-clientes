@@ -95,6 +95,7 @@
 
 import { prisma } from "@/app/lib/prisma"; // Importa sua conexão com o banco
 import { receberDaFila, deletarDaFila } from "@/app/lib/sqs";
+import nodemailer from "nodemailer";
 
 export async function processarFila() {
   const mensagem = await receberDaFila();
@@ -148,7 +149,34 @@ export async function processarFila() {
 }
 
 // Função simples para abstrair o nodemailer
-async function enviarEmail(to: string, subject: string, text: string) {
-  console.log(`Enviando e-mail para ${to}: ${subject}`);
-  // Aqui entra o seu código do nodemailer que discutimos antes
+async function enviarEmail(
+  destinatario: string,
+  assunto: string,
+  corpo: string,
+) {
+  // Cria uma conta de teste no Ethereal
+  const testAccount = await nodemailer.createTestAccount();
+
+  const transporter = nodemailer.createTransport({
+    host: "smtp.ethereal.email",
+    port: 587,
+    secure: false,
+    auth: {
+      user: testAccount.user,
+      pass: testAccount.pass,
+    },
+  });
+
+  const info = await transporter.sendMail({
+    from: '"Sistema OS" <noreply@os.com>',
+    to: destinatario,
+    subject: assunto,
+    text: corpo,
+  });
+
+  // O pulo do gato: imprime a URL do e-mail no Log da Vercel
+  console.log(
+    "E-mail enviado! Veja aqui: %s",
+    nodemailer.getTestMessageUrl(info),
+  );
 }
