@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/app/components/Sidebar";
+import Image from "next/image";
 
 interface Equipment {
   id: number;
   name: string;
   model: string;
   serialNumber: string;
+  imageUrl: string | null;
   client?: {
     id: number;
     name: string;
@@ -34,9 +36,11 @@ export default function EquipmentsPage() {
     model: "",
     serialNumber: "",
     clientId: "",
+    imageUrl: "",
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [file, setFile] = useState<File | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
@@ -84,6 +88,32 @@ export default function EquipmentsPage() {
         throw new Error("Por favor, selecione um cliente.");
       }
 
+      let imageUrl = editingEquipment?.imageUrl || null;
+
+      if (file) {
+        // Solicita a URL assinada para nossa API
+        const resUpload = await fetch("/api/upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fileName: file.name, fileType: file.type }),
+        });
+
+        if (!resUpload.ok) throw new Error("Erro ao preparar upload.");
+
+        const { url, key } = await resUpload.json();
+
+        // Faz o upload direto para o S3
+        const resS3 = await fetch(url, {
+          method: "PUT",
+          headers: { "Content-Type": file.type },
+          body: file,
+        });
+
+        if (!resS3.ok) throw new Error("Erro ao subir arquivo para o S3.");
+
+        imageUrl = key; // A chave do arquivo no S3
+      }
+
       const payload = {
         name: form.name,
         model: form.model,
@@ -111,7 +141,13 @@ export default function EquipmentsPage() {
       }
 
       setShowForm(false);
-      setForm({ name: "", model: "", serialNumber: "", clientId: "" });
+      setForm({
+        name: "",
+        model: "",
+        serialNumber: "",
+        clientId: "",
+        imageUrl: "",
+      });
       setEditingEquipment(null);
       fetchEquipments(token);
     } catch (err: any) {
@@ -137,9 +173,11 @@ export default function EquipmentsPage() {
       name: equipment.name || "",
       model: equipment.model || "",
       serialNumber: equipment.serialNumber || "",
-      // Usamos o encadeamento opcional (?.) para evitar o erro de 'undefined'
       clientId: equipment.client?.id ? equipment.client.id.toString() : "",
+      // Adicione esta linha se o seu estado 'form' tiver a propriedade imageUrl:
+      imageUrl: equipment.imageUrl || "",
     });
+    setFile(null);
     setShowForm(true);
   }
 
@@ -158,7 +196,13 @@ export default function EquipmentsPage() {
           <button
             onClick={() => {
               setEditingEquipment(null);
-              setForm({ name: "", model: "", serialNumber: "", clientId: "" });
+              setForm({
+                name: "",
+                model: "",
+                serialNumber: "",
+                clientId: "",
+                imageUrl: "",
+              });
               setShowForm(true);
             }}
             className="bg-[#1B3A5C] text-white text-sm px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
@@ -228,6 +272,22 @@ export default function EquipmentsPage() {
                     />
                   </div>
                 ))}
+
+                <div>
+                  <label className="block text-sm text-gray-600 mb-1">
+                    Foto do equipamento
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        setFile(e.target.files[0]);
+                      }
+                    }}
+                    className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-[#1B3A5C] hover:file:bg-blue-100"
+                  />
+                </div>
               </div>
 
               <div className="flex justify-end gap-2 mt-5">
@@ -278,6 +338,9 @@ export default function EquipmentsPage() {
                     Cliente
                   </th>
                   <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium">
+                    Foto
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium">
                     Ações
                   </th>
                 </tr>
@@ -299,6 +362,21 @@ export default function EquipmentsPage() {
                     </td>
                     <td className="px-4 py-3 text-gray-600">
                       {equipment.client?.name || "Sem cliente"}
+                    </td>
+                    <td className="px-4 py-3">
+                      {equipment.imageUrl ? (
+                        <Image
+                          src={`https://${process.env.NEXT_PUBLIC_AWS_BUCKET_NAME}.s3.amazonaws.com/${equipment.imageUrl}`}
+                          alt="Equipamento"
+                          width={40} // O Next/Image exige a definição de largura
+                          height={40} // E altura
+                          className="rounded-full object-cover border border-gray-200"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-[10px] text-gray-400">
+                          Sem foto
+                        </div>
+                      )}
                     </td>
                     <td className="px-4 py-3 flex gap-2">
                       <button

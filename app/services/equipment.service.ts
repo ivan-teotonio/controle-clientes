@@ -6,6 +6,7 @@ export class EquipmentService {
     model: string;
     serialNumber: string;
     clientId: number;
+    imageUrl?: string;
   }) {
     const client = await prisma.client.findFirst({
       where: { id: data.clientId, deletedAt: null },
@@ -54,6 +55,7 @@ export class EquipmentService {
         model: data.model,
         serialNumber: data.serialNumber,
         clientId: Number(data.clientId), // Garanta que seja número
+        imageUrl: data.imageUrl, // Adicione o campo imageUrl
       },
     });
   }
