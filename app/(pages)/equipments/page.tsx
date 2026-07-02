@@ -283,6 +283,21 @@ export default function EquipmentsPage() {
                   <label className="block text-sm text-gray-600 mb-1">
                     Foto do equipamento
                   </label>
+
+                  {/* Se for edição e já existir uma URL de imagem, mostra a miniatura */}
+                  {editingEquipment?.imageUrl && !file && (
+                    <div className="mb-2">
+                      <p className="text-xs text-gray-500">Imagem atual:</p>
+                      <Image
+                        src={`https://${process.env.NEXT_PUBLIC_AWS_BUCKET_NAME}.s3.amazonaws.com/${editingEquipment.imageUrl}`}
+                        alt="Thumbnail"
+                        width={60}
+                        height={60}
+                        className="rounded-lg object-cover border"
+                      />
+                    </div>
+                  )}
+
                   <input
                     type="file"
                     accept="image/*"
@@ -293,6 +308,11 @@ export default function EquipmentsPage() {
                     }}
                     className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-[#1B3A5C] hover:file:bg-blue-100"
                   />
+                  <p className="text-[10px] text-gray-400 mt-1">
+                    {file
+                      ? "Novo arquivo selecionado"
+                      : "Escolha um novo arquivo para substituir o atual"}
+                  </p>
                 </div>
               </div>
 
