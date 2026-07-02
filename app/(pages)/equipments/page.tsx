@@ -87,11 +87,12 @@ export default function EquipmentsPage() {
         throw new Error("Por favor, selecione um cliente.");
       }
 
-      // 1. Mantém a imagem existente ou null se for novo e sem arquivo
+      // 1. Inicializa com a imagem atual (se for edição) ou null
       let imageUrl = editingEquipment?.imageUrl || null;
 
-      // 2. Se houver um novo arquivo, faz o upload e atualiza a variável
+      // 2. Se houver um novo arquivo, faz o upload para o S3
       if (file) {
+        // Solicita a URL assinada apenas UMA vez
         const resUpload = await fetch("/api/upload", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -102,6 +103,7 @@ export default function EquipmentsPage() {
 
         const { url, key } = await resUpload.json();
 
+        // Faz o PUT para o S3 usando a URL assinada recebida
         const resS3 = await fetch(url, {
           method: "PUT",
           headers: { "Content-Type": file.type },
@@ -110,16 +112,17 @@ export default function EquipmentsPage() {
 
         if (!resS3.ok) throw new Error("Erro ao subir arquivo para o S3.");
 
-        imageUrl = key; // Agora a variável contém o nome do novo arquivo
+        // Atualiza a variável com a 'key' (nome do arquivo) que será salva no banco
+        imageUrl = key;
       }
 
-      // 3. ADICIONE A imageUrl AO PAYLOAD
+      // 3. Payload contendo a imageUrl correta
       const payload = {
         name: form.name,
         model: form.model,
         serialNumber: form.serialNumber,
         clientId: Number(form.clientId),
-        imageUrl: imageUrl, // <--- ESTA LINHA FALTAVA
+        imageUrl: imageUrl,
       };
 
       const url = editingEquipment
@@ -141,9 +144,17 @@ export default function EquipmentsPage() {
         throw new Error(errorData.message || "Erro ao salvar.");
       }
 
-      // ... resto do código (resetar form, etc)
+      // Sucesso: resetar estados e atualizar a lista
       setShowForm(false);
-      setFile(null); // Limpa o arquivo após salvar
+      setFile(null);
+      setForm({
+        name: "",
+        model: "",
+        serialNumber: "",
+        clientId: "",
+        imageUrl: "",
+      });
+      setEditingEquipment(null);
       fetchEquipments(token);
     } catch (err: any) {
       setError(err.message);
