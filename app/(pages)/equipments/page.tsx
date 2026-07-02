@@ -82,44 +82,44 @@ export default function EquipmentsPage() {
     setSaving(true);
     setError("");
 
-    // Começamos assumindo a imagem que já existe (caso seja edição)
-    let fileName = editingEquipment?.imageUrl || null;
-
     try {
       if (!form.clientId) {
         throw new Error("Por favor, selecione um cliente.");
       }
 
-      // Se o usuário selecionou um NOVO arquivo, fazemos o upload
+      // 1. Mantém a imagem existente ou null se for novo e sem arquivo
+      let imageUrl = editingEquipment?.imageUrl || null;
+
+      // 2. Se houver um novo arquivo, faz o upload e atualiza a variável
       if (file) {
-        const res = await fetch("/api/upload", {
+        const resUpload = await fetch("/api/upload", {
           method: "POST",
-          body: JSON.stringify({ filename: file.name, contentType: file.type }),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fileName: file.name, fileType: file.type }),
         });
 
-        if (!res.ok) throw new Error("Falha ao preparar o upload.");
+        if (!resUpload.ok) throw new Error("Erro ao preparar upload.");
 
-        const { url, key } = await res.json();
+        const { url, key } = await resUpload.json();
 
-        const uploadRes = await fetch(url, {
+        const resS3 = await fetch(url, {
           method: "PUT",
-          body: file,
           headers: { "Content-Type": file.type },
+          body: file,
         });
 
-        if (!uploadRes.ok)
-          throw new Error("Falha ao enviar arquivo para o S3.");
+        if (!resS3.ok) throw new Error("Erro ao subir arquivo para o S3.");
 
-        // Atualizamos para o novo nome do arquivo
-        fileName = key;
+        imageUrl = key; // Agora a variável contém o nome do novo arquivo
       }
 
+      // 3. ADICIONE A imageUrl AO PAYLOAD
       const payload = {
         name: form.name,
         model: form.model,
         serialNumber: form.serialNumber,
         clientId: Number(form.clientId),
-        imageUrl: fileName, // Agora envia a nova foto ou mantém a antiga
+        imageUrl: imageUrl, // <--- ESTA LINHA FALTAVA
       };
 
       const url = editingEquipment
@@ -141,17 +141,9 @@ export default function EquipmentsPage() {
         throw new Error(errorData.message || "Erro ao salvar.");
       }
 
-      // Reset de estado
+      // ... resto do código (resetar form, etc)
       setShowForm(false);
-      setFile(null); // Importante limpar o arquivo selecionado
-      setForm({
-        name: "",
-        model: "",
-        serialNumber: "",
-        clientId: "",
-        imageUrl: "",
-      });
-      setEditingEquipment(null);
+      setFile(null); // Limpa o arquivo após salvar
       fetchEquipments(token);
     } catch (err: any) {
       setError(err.message);
