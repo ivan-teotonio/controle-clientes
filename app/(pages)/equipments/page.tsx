@@ -352,54 +352,60 @@ export default function EquipmentsPage() {
                 </tr>
               </thead>
               <tbody>
-                {equipments.map((equipment) => (
-                  <tr
-                    key={equipment.id}
-                    className="border-b border-gray-50 hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-4 py-3 text-gray-900 font-medium">
-                      {equipment.name}
-                    </td>
-                    <td className="px-4 py-3 text-gray-600">
-                      {equipment.model}
-                    </td>
-                    <td className="px-4 py-3 text-gray-600">
-                      {equipment.serialNumber}
-                    </td>
-                    <td className="px-4 py-3 text-gray-600">
-                      {equipment.client?.name || "Sem cliente"}
-                    </td>
-                    <td className="px-4 py-3">
-                      {equipment.imageUrl ? (
-                        <Image
-                          src={`https://${process.env.NEXT_PUBLIC_AWS_BUCKET_NAME}.s3.amazonaws.com/${equipment.imageUrl}`}
-                          alt="Equipamento"
-                          width={40} // O Next/Image exige a definição de largura
-                          height={40} // E altura
-                          className="rounded-full object-cover border border-gray-200"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-[10px] text-gray-400">
-                          Sem foto
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 flex gap-2">
-                      <button
-                        onClick={() => handleEdit(equipment)}
-                        className="text-xs text-blue-500 hover:text-blue-700 mr-2"
-                      >
-                        Editar
-                      </button>
-                      <button
-                        onClick={() => handleDelete(equipment.id)}
-                        className="text-xs text-red-500 hover:text-red-700 transition-colors"
-                      >
-                        Remover
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {equipments.map((equipment) => {
+                  console.log(
+                    "URL da Imagem Gerada:",
+                    `https://${process.env.NEXT_PUBLIC_AWS_BUCKET_NAME}.s3.amazonaws.com/${equipment.imageUrl}`,
+                  );
+                  return (
+                    <tr
+                      key={equipment.id}
+                      className="border-b border-gray-50 hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="px-4 py-3 text-gray-900 font-medium">
+                        {equipment.name}
+                      </td>
+                      <td className="px-4 py-3 text-gray-600">
+                        {equipment.model}
+                      </td>
+                      <td className="px-4 py-3 text-gray-600">
+                        {equipment.serialNumber}
+                      </td>
+                      <td className="px-4 py-3 text-gray-600">
+                        {equipment.client?.name || "Sem cliente"}
+                      </td>
+                      <td className="px-4 py-3">
+                        {equipment.imageUrl ? (
+                          <Image
+                            src={`https://${process.env.NEXT_PUBLIC_AWS_BUCKET_NAME}.s3.amazonaws.com/${equipment.imageUrl}`}
+                            alt="Equipamento"
+                            width={40} // O Next/Image exige a definição de largura
+                            height={40} // E altura
+                            className="rounded-full object-cover border border-gray-200"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-[10px] text-gray-400">
+                            Sem foto
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 flex gap-2">
+                        <button
+                          onClick={() => handleEdit(equipment)}
+                          className="text-xs text-blue-500 hover:text-blue-700 mr-2"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => handleDelete(equipment.id)}
+                          className="text-xs text-red-500 hover:text-red-700 transition-colors"
+                        >
+                          Remover
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           )}
